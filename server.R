@@ -5,8 +5,9 @@ shinyServer(function(input, output) {
 
     output$pdf <- renderPlot({
         x <- seq(-35, 35, by = 0.1)
-        post_sd <- (1/input$prior_sd+input$data_n/input$data_sd)^(-1)
+        post_sd <- (1/input$prior_sd+1/input$data_sd)^(-1)
         post_mu <- post_sd*(input$prior_mu/input$prior_sd+input$data_n*input$data_mu/input$data_sd)
+        post_mu <- weighted.mean(c(input$prior_mu, input$data_mu), c(1/input$prior_sd, 1/input$data_sd))
         density <- c(dnorm(x, mean = input$data_mu, sd = input$data_sd),
                      dnorm(x, mean = input$prior_mu, sd = input$prior_sd),
                      dnorm(x, mean = post_mu, sd = post_sd))
