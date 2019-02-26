@@ -4,16 +4,18 @@ library(tidyverse)
 shinyServer(function(input, output) {
 
     output$pdf <- renderPlot({
-        x <- seq(-35, 35, by = 0.1)
-        post_sd <- (1/input$prior_sd+1/input$data_sd)^(-1)
-        post_mu <- post_sd*(input$prior_mu/input$prior_sd+input$data_n*input$data_mu/input$data_sd)
-        post_mu <- weighted.mean(c(input$prior_mu, input$data_mu), c(1/input$prior_sd, 1/input$data_sd))
+        x <- seq(-60, 60, by = 0.1)
+        prior_precision <- 1/input$prior_sd^2
+        data_precision <- 1/input$data_sd^2
+        post_precision <- prior_precision + data_precision
+        post_sd <- 1/sqrt(post_precision)
+        post_mu <- weighted.mean(c(input$prior_mu, input$data_mu), c(prior_precision, data_precision))
         density <- c(dnorm(x, mean = input$data_mu, sd = input$data_sd),
                      dnorm(x, mean = input$prior_mu, sd = input$prior_sd),
                      dnorm(x, mean = post_mu, sd = post_sd))
         params <- rep(paste(c("data ", "prior ", "posterior "),
-                            "μ =", c(input$data_mu, input$prior_mu, post_mu), 
-                            "σ² =", c(input$data_sd, input$prior_sd, post_sd)),
+                            "μ =", round(c(input$data_mu, input$prior_mu, post_mu), 3), 
+                            "σ² =", round(c(input$data_sd^2, input$prior_sd^2, post_sd^2), 3)),
                       each = length(x))
         densities <- data_frame(density, params, id = rep(x, 3))
         
