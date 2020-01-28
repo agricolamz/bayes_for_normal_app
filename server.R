@@ -17,8 +17,7 @@ shinyServer(function(input, output) {
                             "μ =", round(c(input$data_mu, input$prior_mu, post_mu), 3), 
                             "σ² =", round(c(input$data_sd^2, input$prior_sd^2, post_sd^2), 3)),
                       each = length(x))
-        densities <- data_frame(density, params, id = rep(x, 3))
-        
+        densities <- tibble(density, params, id = rep(x, 3))
         densities %>% 
             ggplot(aes(id, density, fill = params))+
             geom_polygon(alpha = 0.8)+
